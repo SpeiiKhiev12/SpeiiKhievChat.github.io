@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Friend Chat Room</title>
+    <title>Chat Room Login</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -72,13 +72,30 @@
         </div>
     </div>
 
-    <script>
-        // Firebase configuration (you'll need to replace with your own)
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            updateProfile 
+        } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+
+        // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID"
+            apiKey: "AIzaSyCBqh_SE_NkqmmKbloMWOAkcLAmXfD9SQg",
+            authDomain: "speiikhievchat.firebaseapp.com",
+            projectId: "speiikhievchat",
+            storageBucket: "speiikhievchat.firebasestorage.app",
+            messagingSenderId: "868795534307",
+            appId: "1:868795534307:web:06cbebf97ce8631bf2eed6",
+            measurementId: "G-W1DKMTWXD8"
         };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
         // DOM Elements
         const form = document.getElementById('authForm');
@@ -122,8 +139,8 @@
             try {
                 if (isLoginForm) {
                     // Login logic
-                    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-                    window.location.href = '/chat-room.html'; // Redirect to chat room
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    window.location.href = 'chat-room.html';
                 } else {
                     // Registration logic
                     const name = document.getElementById('name').value;
@@ -136,23 +153,19 @@
                     }
                     
                     // Create user
-                    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     
                     // Update user profile
-                    await userCredential.user.updateProfile({
+                    await updateProfile(userCredential.user, {
                         displayName: name
                     });
                     
-                    window.location.href = '/chat-room.html'; // Redirect to chat room
+                    window.location.href = 'chat-room.html';
                 }
             } catch (error) {
                 messageDiv.textContent = error.message;
             }
         });
-
-        // Note: You'll need to include Firebase SDK scripts in your actual implementation
-        // <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-        // <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     </script>
 </body>
 </html>
