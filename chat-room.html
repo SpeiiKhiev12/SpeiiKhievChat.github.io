@@ -81,14 +81,36 @@
         </form>
     </div>
 
-    <script>
-        // Firebase configuration (you'll need to replace with your own)
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+        import { 
+            getDatabase, 
+            ref, 
+            push, 
+            onChildAdded 
+        } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            databaseURL: "YOUR_DATABASE_URL"
+            apiKey: "AIzaSyCBqh_SE_NkqmmKbloMWOAkcLAmXfD9SQg",
+            authDomain: "speiikhievchat.firebaseapp.com",
+            projectId: "speiikhievchat",
+            storageBucket: "speiikhievchat.firebasestorage.app",
+            messagingSenderId: "868795534307",
+            appId: "1:868795534307:web:06cbebf97ce8631bf2eed6",
+            measurementId: "G-W1DKMTWXD8"
         };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
 
         // DOM Elements
         const chatMessages = document.getElementById('chat-messages');
@@ -98,22 +120,22 @@
         const logoutBtn = document.getElementById('logout-btn');
 
         // Check authentication state
-        firebase.auth().onAuthStateChanged((user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 // User is signed in
                 usernameSpan.textContent = user.displayName || user.email;
                 setupChatListener(user);
             } else {
                 // No user is signed in, redirect to login
-                window.location.href = '/index.html';
+                window.location.href = 'index.html';
             }
         });
 
         // Logout functionality
         logoutBtn.addEventListener('click', () => {
-            firebase.auth().signOut().then(() => {
+            signOut(auth).then(() => {
                 // Sign-out successful.
-                window.location.href = '/index.html';
+                window.location.href = 'index.html';
             }).catch((error) => {
                 // An error happened.
                 console.error('Logout error', error);
@@ -124,13 +146,15 @@
         messageForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const message = messageInput.value.trim();
-            if (message) {
-                const user = firebase.auth().currentUser;
-                firebase.database().ref('messages').push({
+            const user = auth.currentUser;
+            
+            if (message && user) {
+                const messagesRef = ref(database, 'messages');
+                push(messagesRef, {
                     text: message,
                     sender: user.uid,
                     senderName: user.displayName || user.email,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                    timestamp: new Date().toISOString()
                 });
                 messageInput.value = '';
             }
@@ -138,8 +162,8 @@
 
         // Setup chat message listener
         function setupChatListener(user) {
-            const messagesRef = firebase.database().ref('messages');
-            messagesRef.on('child_added', (snapshot) => {
+            const messagesRef = ref(database, 'messages');
+            onChildAdded(messagesRef, (snapshot) => {
                 const message = snapshot.val();
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message');
@@ -153,11 +177,6 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             });
         }
-
-        // Note: You'll need to include Firebase SDK scripts in your actual implementation
-        // <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-        // <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-        // <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     </script>
 </body>
 </html>
