@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friend Chat Room</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-top: 50px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-toggle {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        #message {
+            margin-top: 15px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="formTitle">Login</h2>
+        <form id="authForm">
+            <div id="nameField" style="display:none;">
+                <input type="text" id="name" placeholder="Full Name" required>
+            </div>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <div id="confirmPasswordField" style="display:none;">
+                <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+            </div>
+            <button type="submit" id="submitBtn">Login</button>
+            <div id="message"></div>
+        </form>
+        <div class="form-toggle">
+            <span id="toggleFormText">Don't have an account? </span>
+            <a href="#" id="toggleForm">Register</a>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration (you'll need to replace with your own)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID"
+        };
+
+        // DOM Elements
+        const form = document.getElementById('authForm');
+        const formTitle = document.getElementById('formTitle');
+        const submitBtn = document.getElementById('submitBtn');
+        const toggleFormLink = document.getElementById('toggleForm');
+        const messageDiv = document.getElementById('message');
+        const nameField = document.getElementById('nameField');
+        const confirmPasswordField = document.getElementById('confirmPasswordField');
+
+        // Toggle between Login and Register
+        let isLoginForm = true;
+        toggleFormLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLoginForm = !isLoginForm;
+            
+            if (isLoginForm) {
+                formTitle.textContent = 'Login';
+                submitBtn.textContent = 'Login';
+                nameField.style.display = 'none';
+                confirmPasswordField.style.display = 'none';
+                toggleFormLink.textContent = 'Register';
+                document.querySelector('.form-toggle span').textContent = "Don't have an account? ";
+            } else {
+                formTitle.textContent = 'Register';
+                submitBtn.textContent = 'Register';
+                nameField.style.display = 'block';
+                confirmPasswordField.style.display = 'block';
+                toggleFormLink.textContent = 'Login';
+                document.querySelector('.form-toggle span').textContent = "Already have an account? ";
+            }
+        });
+
+        // Form submission handler
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                if (isLoginForm) {
+                    // Login logic
+                    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                    window.location.href = '/chat-room.html'; // Redirect to chat room
+                } else {
+                    // Registration logic
+                    const name = document.getElementById('name').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    
+                    // Basic validation
+                    if (password !== confirmPassword) {
+                        messageDiv.textContent = 'Passwords do not match';
+                        return;
+                    }
+                    
+                    // Create user
+                    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                    
+                    // Update user profile
+                    await userCredential.user.updateProfile({
+                        displayName: name
+                    });
+                    
+                    window.location.href = '/chat-room.html'; // Redirect to chat room
+                }
+            } catch (error) {
+                messageDiv.textContent = error.message;
+            }
+        });
+
+        // Note: You'll need to include Firebase SDK scripts in your actual implementation
+        // <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+        // <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    </script>
+</body>
+</html>
